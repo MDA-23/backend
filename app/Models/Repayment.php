@@ -23,4 +23,9 @@ class Repayment extends Model
     {
         return $this->belongsTo(Loan::class, 'id_loan');
     }
+
+    protected $casts = [
+        "date" => "date",
+        "amount" => "int"
+    ];
 }
