@@ -2,10 +2,15 @@
 
 use App\Helpers\BaseResponse;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CreditScoreController;
+use App\Http\Controllers\LoanController;
+use App\Http\Controllers\LoanProfileController;
 use App\Http\Controllers\MerchantController;
 use App\Http\Controllers\OutletController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RepaymentController;
 use App\Http\Controllers\TransactionController;
+use App\Models\CreditScore;
 use App\Models\OutletRevenue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -46,6 +51,20 @@ Route::middleware("auth")->group(function () {
         Route::put("/{idOutlet}", [OutletController::class, 'update']);
         Route::delete("/{idOutlet}", [OutletController::class, 'delete']);
     });
+
+    Route::prefix("/loan")->group(function () {
+        Route::get("/", [LoanController::class, 'index']);
+        Route::post("/apply", [LoanController::class, 'apply']);
+        Route::prefix("/{idLoan}")->group(function () {
+            Route::get("/", [LoanController::class, 'show']);
+            Route::get("/repayment", [RepaymentController::class, 'index']);
+            Route::post("/repayment/pay", [RepaymentController::class, 'pay']);
+            Route::get("/repayment/{idRepayment}", [RepaymentController::class, 'show']);
+        });
+    });
+
+    Route::get("/loan-profile", [LoanProfileController::class, 'index']);
+    Route::get("/credit-score", [CreditScoreController::class, 'index']);
 });
 
 Route::get("/", function () {
