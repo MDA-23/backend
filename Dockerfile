@@ -1,13 +1,57 @@
-FROM php:8.2-fpm-alpine
+FROM php:8.3.12-fpm
 
-ADD ./docker/php/www.conf /usr/local/etc/php-fpm.d/www.conf
+# Set working directory
+WORKDIR /var/www
 
-RUN addgroup -g 1000 laravel && adduser -G laravel -g laravel -s /bin/sh -D laravel
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    locales \
+    zip \
+    jpegoptim optipng pngquant gifsicle \
+    vim \
+    unzip \
+    git \
+    curl \
+    libzip-dev \
+    npm \
+    cron \
+    iputils-ping
 
-RUN mkdir -p /var/www/html
+RUN npm install --global yarn
 
-ADD ./src/ /var/www/html
+RUN curl -sL https://deb.nodesource.com/setup_22.x | bash -
+RUN apt-get install -y nodejs
 
-RUN docker-php-ext-install pdo pdo_mysql
+# Clear cache
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN chown -R laravel:laravel /var/www/html
+# Install extensions
+RUN docker-php-ext-install pdo_mysql gd zip
+
+# Install composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Copy existing application directory contents
+COPY --chown=www-data:www-data app /var/www
+
+# # Copy cronjob file
+# COPY cronjob /etc/cron.d/laravel-cron
+
+# # Apply appropriate permissions to the cronjob file
+# RUN chmod 0644 /etc/cron.d/laravel-cron
+
+# Apply ownership to the log file for cron
+RUN touch /var/log/cron.log && chown -f www-data:www-data /var/log/cron.log
+
+# Start cron and PHP-FPM together
+CMD if [ ! -f /var/www/.env ]; then \
+        composer create-project --prefer-dist laravel/laravel .; \
+    fi && \
+    cron && php-fpm
+
+# Expose port 9000
+EXPOSE 9000
