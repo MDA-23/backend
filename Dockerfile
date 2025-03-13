@@ -39,13 +39,10 @@ RUN docker-php-ext-install pdo_mysql gd zip
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Copy existing application directory contents
-COPY --chown=www-data:www-data app /var/www
+COPY . /var/www
 
-# # Copy cronjob file
-# COPY cronjob /etc/cron.d/laravel-cron
-
-# # Apply appropriate permissions to the cronjob file
-# RUN chmod 0644 /etc/cron.d/laravel-cron
+# Copy existing application directory permissions
+COPY --chown=www:www . /var/www
 
 # Apply ownership to the log file for cron
 RUN touch /var/log/cron.log && chown -f www-data:www-data /var/log/cron.log
