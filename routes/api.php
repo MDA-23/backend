@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\BaseResponse;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MerchantController;
 use App\Http\Controllers\OutletController;
@@ -59,4 +60,8 @@ Route::get("/", function () {
     }
 
     return $selectedTransactions;
+});
+
+Route::get("/jancok", function () {
+    return BaseResponse::success("anjir", null);
 });
