@@ -25,12 +25,24 @@ class MerchantController extends Controller
         }
     }
 
+
     public function verify(Request $request)
     {
         try {
             $user = $request->user();
+            // Check loan profile
+            $validLoanProfile = LoanProfile::where("id_user", $user->id)->get()->first();
+            if ($validLoanProfile) {
+                $validCreditScore = CreditScore::where("id_loan_profile", $validLoanProfile->id)->get()->first();
+                return BaseResponse::success("Success verify document", [
+                    "loanProfile" => $validLoanProfile,
+                    "creditScore" => $validCreditScore,
+                ]);
+            }
+
             DB::transaction(function () use ($user, &$merchant, &$loanProfile, &$creditScore) {
-                $merchant = Merchant::where("id_user", $user->id)->update([
+                $merchant =  Merchant::where("id_user", $user->id)->get()->first();
+                $merchant->update([
                     "applyForm" => "https://cdn.mfadlilhs.site/dpka/activities/banner/1732302890812-ASA.png",
                     "ktp" => "https://cdn.mfadlilhs.site/dpka/activities/banner/1732302890812-ASA.png",
                     "photo" => "https://cdn.mfadlilhs.site/dpka/activities/banner/1732302890812-ASA.png",
@@ -57,7 +69,7 @@ class MerchantController extends Controller
                 $maxAmount = floor(0.8 * $difference / 100000) * 100000;
 
                 $loanProfile = LoanProfile::create([
-                    "id_merchant" => $merchant,
+                    "id_merchant" => $merchant->id,
                     "id_user" => $user->id,
                     "minAmount" => 300000,
                     "limit" => 0,
