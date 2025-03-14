@@ -37,7 +37,7 @@ class AuthController extends Controller
             $token = $user->createToken("app_token")->plainTextToken;
             return BaseResponse::success("Login Succeed", ["token" => $token]);
         } catch (Exception $error) {
-            return BaseResponse::error("Error while login", 500, $error->getMessage());
+            return BaseResponse::error("Invalid phone/password", 500, $error->getMessage());
         }
     }
 
